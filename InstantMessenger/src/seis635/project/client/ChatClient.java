@@ -8,8 +8,8 @@ public class ChatClient {
 
 	//Hard-code in server's IP Address and port
 	//at this point for dev purposes
-	final static String hostName = "192.168.1.84";
-	final static int portNumber = 81;
+	final static String hostName = "172.16.214.125";
+	final static int portNumber = 8001;
 	
 	private static Socket socket;
 	

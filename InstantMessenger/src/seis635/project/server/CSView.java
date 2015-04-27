@@ -5,14 +5,15 @@ import java.awt.Container;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JTextArea;
 
 public class CSView {
 
 	private JFrame frame;
 	private Container contentPane;
-	private JTextArea userWindow;
-	private JTextArea serverMsgWindow;
+	public JList userWindow;
+	public JTextArea serverMsgWindow;
 	private JDialog dialog;
 	private CSController controller;
 	
@@ -26,9 +27,17 @@ public class CSView {
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		//Create the Swing components
+		//TO-DO add some borders to components
+		serverMsgWindow = new JTextArea(10, 30);
+		serverMsgWindow.setEditable(false);
+		
 		//Set up the content in frame
 		contentPane = frame.getContentPane();
 		contentPane.setLayout(new BorderLayout());
+		
+		//Add components to contentPane
+		contentPane.add(serverMsgWindow, BorderLayout.PAGE_END);
 		
 		frame.setContentPane(contentPane);
 		frame.setVisible(true);
