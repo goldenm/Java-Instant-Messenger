@@ -8,10 +8,8 @@ import java.net.UnknownHostException;
 
 public class ChatClient {
 
-	//Hard-code in server's IP Address and port
-	//at this point for dev purposes
-	final static String hostName = "172.16.214.125";
 	final static int portNumber = 8001;
+	private static String hostName = "";
 	private static CCController controller;
 	private static CCView view;
 	private static ObjectInputStream cObjIn;
@@ -79,5 +77,9 @@ public class ChatClient {
 	
 	public static void setUsername(String user){
 		username = user;
+	}
+	
+	public static void setIP(String IP){
+		hostName = IP;
 	}
 }

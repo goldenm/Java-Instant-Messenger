@@ -16,8 +16,10 @@ import javax.swing.JTextField;
 public class LoginDialog extends JDialog {
 
 	private JPanel panel;
-	private JLabel text;
+	private JLabel jText1;
+	private JLabel jText2;
 	private JTextField username;
+	private JTextField IP;
 	private JButton login, cancel;
 	
 	public LoginDialog(JFrame parent){
@@ -31,13 +33,26 @@ public class LoginDialog extends JDialog {
 		
 		//Set up components and add them to panel
 		cs.gridy = 0;
-		text = new JLabel("Enter your username:");
-		panel.add(text, cs);
+		jText1 = new JLabel("Enter your username:");
+		panel.add(jText1, cs);
 		
-		cs.gridy = 1;
+		cs.gridy = 0;
+		cs.gridx = 1;
 		cs.gridwidth = 2;
 		username = new JTextField(20);
 		panel.add(username, cs);
+		
+		cs.gridy = 1;
+		cs.gridx = 0;
+		cs.gridwidth = 1;
+		jText2 = new JLabel("Enter IP of Server:");
+		panel.add(jText2, cs);
+		
+		cs.gridy = 1;
+		cs.gridx = 1;
+		cs.gridwidth = 2;
+		IP = new JTextField(20);
+		panel.add(IP, cs);
 		
 		cs.gridx = 0;
 		cs.gridy = 2;
@@ -51,7 +66,7 @@ public class LoginDialog extends JDialog {
 		panel.add(cancel, cs);
 		
 		this.setContentPane(panel);
-		this.setSize(300, 200);
+		this.setSize(400, 200);
 		
 		//Add button listeners to both buttons
 		login.addActionListener(new ActionListener(){
@@ -59,6 +74,7 @@ public class LoginDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				ChatClient.setUsername(username.getText().trim());
+				
 				dispose();
 			}});
 		
