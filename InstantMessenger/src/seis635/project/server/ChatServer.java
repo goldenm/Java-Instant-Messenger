@@ -129,5 +129,6 @@ public class ChatServer implements Remote {
 			
 		init();				//Initialize the Chat Server
 		listen();			//Listen on port, log
+		controller.updateUserList();
 	}
 }

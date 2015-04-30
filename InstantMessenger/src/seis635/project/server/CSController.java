@@ -29,17 +29,18 @@ public class CSController {
 		ChatServer.shutdown();
 	}
 	
+	//Change to a plain array because it's just easier to work
+	//with on JList and other Swing components
 	public String[] updateUserList(){
 		
-		//Change to a plain array because it's just easier to work
-		//with on JList and other Swing components
 		ArrayList<User> users = ChatServer.getUsers();
 		String userArray[] = new String[users.size()];
 		//userArray = users.toArray(userArray);
 		
 		//TODO -- finish this
 		for(User user : users){
-			user.getUsername();
+			int index = 0;
+			userArray[index] = user.getUsername();
 		}
 		
 		return userArray;
