@@ -16,7 +16,7 @@ public class CSView {
 	private JFrame frame;
 	private Container contentPane;
 	private Border border;
-	public JList userWindow;
+	public JList userList;
 	public JTextArea serverMsgWindow;
 	private JDialog dialog;
 	private CSController controller;
@@ -39,6 +39,7 @@ public class CSView {
 		serverMsgWindow = new JTextArea(10, 30);
 		serverMsgWindow.setEditable(false);
 		serverMsgWindow.setBorder(border);
+		userList = new JList(controller.updateUserList());
 		
 		//Set up the content in frame
 		contentPane = frame.getContentPane();

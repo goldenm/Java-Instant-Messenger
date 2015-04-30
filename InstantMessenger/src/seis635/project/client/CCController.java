@@ -10,4 +10,8 @@ public class CCController {
 	public void setCCView(CCView view){
 		this.view = view;
 	}
+	
+	public void sendMessage(String username, String msg){
+		
+	}
 }

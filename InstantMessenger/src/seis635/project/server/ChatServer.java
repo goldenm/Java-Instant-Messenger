@@ -19,8 +19,8 @@ public class ChatServer implements Remote {
 	private static Socket clientSocket;
 	private static ObjectInputStream objIn;
 	private static ObjectOutputStream objOut;
-	public static ArrayList<User> users;
-	public static int userCounter;
+	private static ArrayList<User> users;
+	private static int userCounter;
 	
 	private static CSView view;
 	private static CSController controller;
@@ -30,7 +30,7 @@ public class ChatServer implements Remote {
 	public static void init(){
 		try{
 			//Start server
-			serverSocket = new ServerSocket(portNumber);			
+			serverSocket = new ServerSocket(portNumber);
 			controller.writeMsg("Server running on " + IP + ":" + 
 			portNumber);
 			
@@ -47,19 +47,9 @@ public class ChatServer implements Remote {
 		}
 	}
 	
-	//Code to stop the server and stop it pretty hard
-	//Additional functionality could be added here to notify users, etc.
-	public static void shutdown(){
-		try {
-			serverSocket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		users = null;
-	}
-	
 	//The server listens on the Port and calls method to log in new users
 	public static void listen(){
+		
 		try{
 			clientSocket = serverSocket.accept();
 			controller.writeMsg("Client IP " + clientSocket.getLocalAddress().getHostAddress()
@@ -72,6 +62,17 @@ public class ChatServer implements Remote {
 		}catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	//Code to stop the server and stop it pretty hard
+	//Additional functionality could be added here to notify users, etc.
+	public static void shutdown(){
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		users = null;
 	}
 	
 	//Log in user and store them in the ArrayList of users
@@ -91,18 +92,24 @@ public class ChatServer implements Remote {
 		
 		//If the data verifies, store them in users otherwise go back to listening
 		if(clientSocket != null && tempUsername != ""){
-			User tempUser = new User(clientSocket, tempUsername);
+			User tempUser = new User(clientSocket, tempUsername, objIn, objOut);
 			users.add(userCounter, tempUser);
 			controller.writeMsg("User " + tempUsername + " logged in");
 			userCounter++;
 			objOut.writeObject(new String("SUCCESS"));
 			objOut.flush();
+			listen();
+			controller.updateUserList();
 		}
 		else{
 			objOut.writeObject(new String("FAIL"));
 			objOut.flush();
 			listen();
 		}
+	}
+	
+	public static ArrayList<User> getUsers(){
+		return users;
 	}
 	
 	public static void main(String[] args){
@@ -117,6 +124,7 @@ public class ChatServer implements Remote {
 			IP = InetAddress.getLocalHost();
 		}catch(IOException e){
 			e.printStackTrace();
+			System.exit(1);
 		}
 			
 		init();				//Initialize the Chat Server
