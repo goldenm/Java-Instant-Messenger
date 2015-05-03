@@ -72,7 +72,7 @@ public class LoginDialog extends JDialog {
 		login.addActionListener(new ActionListener(){
 
 			@Override
-			public void actionPerformed(ActionEvent event) {
+			public void actionPerformed(ActionEvent e) {
 				//These should be added to the controller
 				//Note: NPE b/c view hasn't been fully created to
 				//have a controller reference passed to it

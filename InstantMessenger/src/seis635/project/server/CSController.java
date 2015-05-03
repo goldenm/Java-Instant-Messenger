@@ -31,7 +31,7 @@ public class CSController {
 	
 	//Change to a plain array because it's just easier to work
 	//with on JList and other Swing components
-	public String[] updateUserList(){
+	public void updateUserList(){
 		
 		ArrayList<User> users = ChatServer.getUsers();
 		String userArray[] = new String[users.size()];
@@ -43,6 +43,11 @@ public class CSController {
 			userArray[index] = user.getUsername();
 		}
 		
-		return userArray;
+		for(String string : userArray){
+			System.out.println(string);
+		}
+		
+		view.updateUserList(userArray);
+		
 	}
 }

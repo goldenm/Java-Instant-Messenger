@@ -98,8 +98,8 @@ public class ChatServer implements Remote {
 			userCounter++;
 			objOut.writeObject(new String("SUCCESS"));
 			objOut.flush();
-			listen();
 			controller.updateUserList();
+			listen();
 		}
 		else{
 			objOut.writeObject(new String("FAIL"));
@@ -126,9 +126,8 @@ public class ChatServer implements Remote {
 			e.printStackTrace();
 			System.exit(1);
 		}
-			
+		
 		init();				//Initialize the Chat Server
 		listen();			//Listen on port, log
-		controller.updateUserList();
 	}
 }
