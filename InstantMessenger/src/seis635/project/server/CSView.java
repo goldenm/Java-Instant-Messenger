@@ -3,6 +3,7 @@ package seis635.project.server;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridLayout;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -18,7 +19,7 @@ public class CSView {
 	private Container contentPane;
 	private Border border;
 	private JList userList;
-	DefaultListModel<String> model;
+	private DefaultListModel<String> model;
 	public JTextArea serverMsgWindow;
 	private CSController controller;
 	
@@ -37,11 +38,9 @@ public class CSView {
 		
 		//Create the Swing components
 		model = new DefaultListModel<String>();
-		model.add(0, "Users");
 		userList = new JList<String>(model);
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		userList.setBorder(border);
-		//userList.setFixedCellWidth(200);
 		
 		//TODO - make window scroll
 		serverMsgWindow = new JTextArea(10, 30);
@@ -58,13 +57,12 @@ public class CSView {
 		frame.setVisible(true);
 	}
 	
-	public void updateUserList(String[] users){
-		
+	public void updateUsers(String[] userArray){
+
 		model.clear();
 		
-		//TODO - not sure this is right:
-		for(String user : users){
-			model.addElement(user);
+		for(int i = 0; i < userArray.length; i++){
+			model.add(i, userArray[i]);
 		}
 	}
 }

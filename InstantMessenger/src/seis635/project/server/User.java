@@ -1,4 +1,4 @@
-package seis635.project.cmn;
+package seis635.project.server;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

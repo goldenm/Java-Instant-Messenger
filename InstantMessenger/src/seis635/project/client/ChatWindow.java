@@ -12,7 +12,6 @@ import javax.swing.border.Border;
 
 public class ChatWindow {
 
-	private CCController controller;
 	private JFrame frame;
 	private Container contentPane;
 	private Border border;

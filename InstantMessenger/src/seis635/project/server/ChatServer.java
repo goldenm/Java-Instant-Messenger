@@ -6,110 +6,93 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.rmi.Remote;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-import seis635.project.cmn.User;
+import seis635.project.cmn.Message;
 
-public class ChatServer implements Remote {
+public class ChatServer {
 
 	final static int portNumber = 8001;
 	private static ServerSocket serverSocket;
 	private static InetAddress IP;
 	private static Socket clientSocket;
-	private static ObjectInputStream objIn;
-	private static ObjectOutputStream objOut;
-	private static ArrayList<User> users;
-	private static int userCounter;
+	public static Map<String, CSHandler> users;
 	
 	private static CSView view;
 	private static CSController controller;
 	
-	//Code to initialize the basic server functionality without
-	//setting it to listen on the specified port
 	public static void init(){
 		try{
 			//Start server
+			IP = InetAddress.getLocalHost();
 			serverSocket = new ServerSocket(portNumber);
-			controller.writeMsg("Server running on " + IP + ":" + 
-			portNumber);
-			
-			//Instantiate user ArrayList and userCounter
-			//This will reset everything if the server is stopped and restarted
-			users = new ArrayList<User>();
-			userCounter = 0;
+			controller.writeMsg("Server running on " + IP + ":" + portNumber);
 			
 			//Debugging on console
-			System.out.println("Server running on " + IP + ":" + 
-			portNumber);
+			System.out.println("Server running on " + IP + ":" + portNumber);
 		} catch(Exception e){
+			System.err.println("Server could not be started.");
 			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 	
-	//The server listens on the Port and calls method to log in new users
+	//The server listens and calls the method to log in new users
 	public static void listen(){
 		
 		try{
 			clientSocket = serverSocket.accept();
 			controller.writeMsg("Client IP " + clientSocket.getLocalAddress().getHostAddress()
-					+ " connected to port " + portNumber);
+					+ " connected.");
+			
 			//Debugging on console
 			System.out.println("Client IP " + clientSocket.getLocalAddress().getHostAddress()
-					+ " connected to " + portNumber);
+					+ " connected.");
 			
 			loginUser(clientSocket);
+			
 		}catch(IOException e){
 			e.printStackTrace();
 		}
 	}
 	
-	//Code to stop the server and stop it pretty hard
-	//Additional functionality could be added here to notify users, etc.
-	public static void shutdown(){
-		try {
-			serverSocket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		users = null;
-	}
-	
-	//Log in user and store them in the ArrayList of users
 	public static void loginUser(Socket clientSocket) throws IOException{
-		String tempUsername = "";
+
 		try{
-			objIn = new ObjectInputStream(clientSocket.getInputStream());
-			objOut = new ObjectOutputStream(clientSocket.getOutputStream());
-			tempUsername = (String) objIn.readObject();
+			ObjectInputStream objIn = new ObjectInputStream(clientSocket.getInputStream());
+			ObjectOutputStream objOut = new ObjectOutputStream(clientSocket.getOutputStream());
+			Message loginRequest = (Message) objIn.readObject();
 			
-			//Debugging
-			//controller.writeMsg("User " + tempUsername + " logged in");
-			
-		}catch (ClassNotFoundException e) {
+			if(loginRequest.getType() == Message.LOGIN && !loginRequest.getData().equals("")){
+				
+				//Create new handler, log user in HashMap
+				CSHandler handler = new CSHandler(clientSocket, objIn, objOut);
+				users.put((String) loginRequest.getData(), handler);
+				controller.writeMsg("User " + loginRequest.getData() + " logged in");
+				
+				//Confirm login to user
+				objOut.writeObject(new Message(null, null, "SUCCESS", Message.SERVER_RESPONSE));
+				objOut.flush();
+				
+				//Send current users to update GUI initially
+				objOut.writeObject(new Message(null, null, getUsernames(), Message.UPDATE_USERS));
+				objOut.flush();
+				
+				//Update users on Server GUI
+				view.updateUsers(getUsernames());
+			}
+			else{
+				objOut.writeObject(new Message(null, null, "FAIL", Message.SERVER_RESPONSE));
+				objOut.flush();
+			}
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();	
 		}
-		
-		//If the data verifies, store them in users otherwise go back to listening
-		if(clientSocket != null && tempUsername != ""){
-			User tempUser = new User(clientSocket, tempUsername, objIn, objOut);
-			users.add(userCounter, tempUser);
-			controller.writeMsg("User " + tempUsername + " logged in");
-			userCounter++;
-			objOut.writeObject(new String("SUCCESS"));
-			objOut.flush();
-			controller.updateUserList();
-			listen();
-		}
-		else{
-			objOut.writeObject(new String("FAIL"));
-			objOut.flush();
-			listen();
-		}
 	}
 	
-	public static ArrayList<User> getUsers(){
-		return users;
+	public static String[] getUsernames(){
+		return users.keySet().toArray(new String[users.size()]);
 	}
 	
 	public static void main(String[] args){
@@ -118,16 +101,30 @@ public class ChatServer implements Remote {
 		view = new CSView(controller);
 		controller.setCSView(view);
 		
-		//Get local IP address to display in Frame
-		//Maybe toss this in a getter if needed later in other classes
-		try{
-			IP = InetAddress.getLocalHost();
-		}catch(IOException e){
-			e.printStackTrace();
-			System.exit(1);
-		}
+		users = new HashMap<String, CSHandler>();
 		
 		init();				//Initialize the Chat Server
-		listen();			//Listen on port, log
+		
+		while(true){
+			listen();		//Listen on port indefinitely
+		}
 	}
+	
+	
+	//Create member class as helper for ChatServer.  This class will contain
+	//the Thread listening on the Port and will have access to all the ChatServer's
+	//data.  The Listener will poll a message queue, which oddly enough is not 
+	//implemented in Java except as a Linked List.
+	/*public class Listener extends Thread {
+		
+		public synchronized void run(){
+			try{
+				while(true){
+					
+				}
+			} catch(Exception e){
+				
+			}
+		}
+	}*/
 }

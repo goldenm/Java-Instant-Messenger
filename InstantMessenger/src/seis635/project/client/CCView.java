@@ -4,23 +4,22 @@ import java.awt.Color;
 import java.awt.Container;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JTextArea;
+import javax.swing.JList;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 
 public class CCView {
 
-	private CCController controller;
 	private JFrame frame;
 	private Container contentPane;
 	private Border border;
-	private JMenuBar menuBar;
-	private JLabel userLabel;
+	private DefaultListModel<String> model;
+	private JList userList;
 	
-	public CCView(CCController controller){
-		this.controller = controller;	//Constructor dependency injection
+	public CCView(){
 		
 		//Create frame, set size, center, and set exit on close
 		frame = new JFrame("Chat Client");
@@ -35,11 +34,28 @@ public class CCView {
 		//Set up pane
 		contentPane = frame.getContentPane();
 		
+		//Create userList
+		model = new DefaultListModel<String>();
+		userList = new JList<String>(model);
+		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		userList.setBorder(border);
+		
+		contentPane.add(userList);
+		
 		frame.setContentPane(contentPane);
 		frame.setVisible(true);
 		
 		LoginDialog loginDialog = new LoginDialog(frame);
 		loginDialog.setLocationRelativeTo(frame);
 		loginDialog.setVisible(true);
+	}
+	
+	public void updateUsers(String[] userArray){
+
+		model.clear();
+		
+		for(int i = 0; i < userArray.length; i++){
+			model.add(i, userArray[i]);
+		}
 	}
 }
