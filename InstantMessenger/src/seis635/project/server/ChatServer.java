@@ -7,7 +7,9 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 import seis635.project.cmn.Message;
 
@@ -18,9 +20,30 @@ public class ChatServer {
 	private static InetAddress IP;
 	private static Socket clientSocket;
 	public static Map<String, CSHandler> users;
+	public static Queue<Message> msgQueue;
 	
 	private static CSView view;
 	private static CSController controller;
+	
+	public ChatServer(){
+		
+		controller = new CSController();
+		view = new CSView(controller);
+		controller.setCSView(view);
+		
+		users = new HashMap<String, CSHandler>();
+		msgQueue = new LinkedList<Message>();
+		
+		init();				//Initialize the Chat Server
+		
+		Listener serverListener = new Listener();
+		serverListener.start();
+		
+		while(true){
+			listen();		//Listen on port indefinitely
+		}
+		
+	}
 	
 	public static void init(){
 		try{
@@ -76,8 +99,10 @@ public class ChatServer {
 				objOut.flush();
 				
 				//Send current users to update GUI initially
-				objOut.writeObject(new Message(null, null, getUsernames(), Message.UPDATE_USERS));
-				objOut.flush();
+				//TODO - send updated users to ALL USERS
+				//objOut.writeObject(new Message(null, null, getUsernames(), Message.UPDATE_USERS));
+				//objOut.flush();
+				updateAllUsers();
 				
 				//Update users on Server GUI
 				view.updateUsers(getUsernames());
@@ -95,36 +120,50 @@ public class ChatServer {
 		return users.keySet().toArray(new String[users.size()]);
 	}
 	
-	public static void main(String[] args){
-		
-		controller = new CSController();
-		view = new CSView(controller);
-		controller.setCSView(view);
-		
-		users = new HashMap<String, CSHandler>();
-		
-		init();				//Initialize the Chat Server
-		
-		while(true){
-			listen();		//Listen on port indefinitely
+	public static void updateAllUsers(){
+		for(String user : users.keySet()){
+			users.get(user).sendMessage(new Message(null, null, getUsernames(), Message.UPDATE_USERS));
 		}
 	}
 	
+	public void removeUser(String user){
+		users.remove(user);
+		//need method to update all users
+	}
 	
-	//Create member class as helper for ChatServer.  This class will contain
-	//the Thread listening on the Port and will have access to all the ChatServer's
-	//data.  The Listener will poll a message queue, which oddly enough is not 
-	//implemented in Java except as a Linked List.
-	/*public class Listener extends Thread {
+	public static void main(String[] args){
+		
+		@SuppressWarnings("unused")
+		ChatServer server = new ChatServer();
+	}
+	
+	
+	//Update 5/5/2015: Create member class as helper for ChatServer.  This 
+	//class will contain the Thread listening on the Port and will have access 
+	//to all the ChatServer's incoming data.  The Listener will poll a message 
+	//queue.  Many synchronization issues can effectively be solved by
+	//synchronizing this member class's run method and passing all Message objects
+	//through it.
+	public class Listener extends Thread {
 		
 		public synchronized void run(){
 			try{
 				while(true){
+					while(msgQueue.peek() == null){
+						wait();	//Need a value here?
+					}
 					
+					Message currentMsg = msgQueue.poll();
+					
+					for(String user : users.keySet()){
+						if(user.equals(currentMsg.getRecipient())){
+							users.get(user).sendMessage(currentMsg);
+						}
+					}
 				}
 			} catch(Exception e){
-				
+				e.printStackTrace();
 			}
 		}
-	}*/
+	}
 }

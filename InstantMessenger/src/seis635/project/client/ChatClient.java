@@ -5,7 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import seis635.project.cmn.Message;
 
@@ -18,7 +19,7 @@ public class ChatClient {
 	private static ObjectOutputStream cObjOut;
 	private static Socket socket;
 	private static String username;
-	private static boolean connected;
+	public static Queue<Message> msgQueue;
 	
 	public ChatClient() {
 		view = new CCView();
@@ -27,6 +28,12 @@ public class ChatClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		msgQueue = new LinkedList<Message>();
+		
+		Listener chatListener = new Listener();
+		chatListener.start();
+		
 	}
 	
 	public static void connect() throws IOException{
@@ -51,7 +58,6 @@ public class ChatClient {
 
 			if(confirmation.getData().equals("SUCCESS")){
 				System.out.println("Connection successful.");
-				connected = true;
 				
 				//Initial update of users
 				Message users = (Message) cObjIn.readObject();
@@ -59,11 +65,9 @@ public class ChatClient {
 			}
 			else if(confirmation.getData().equals("")){
 				System.out.println("Username is blank.  Try connecting again with a username");
-				connected = false;
 			}	
 			else{
 				System.out.println("Connection failed.  Username may not be unique or is blank.  Try again.");
-				connected = false;
 			}
 		} catch (ClassNotFoundException e) {
 			System.err.println("Wrong class returned.");
@@ -76,14 +80,35 @@ public class ChatClient {
 			System.err.println("Unable to establish I/O connection with " +
 					hostName + " and Port " + portNumber);
 			e.printStackTrace();
-		}	finally{
-			cObjIn.close();
-			cObjOut.close();
 		}
 	}
 	
-	//Adding a main method to test out basic
-	//functionality
+	//Send Message
+	public static void sendMessage(String recipient, String message){
+		Message msg = new Message(recipient, username, message, Message.MESSAGE);
+		try {
+			cObjOut.writeObject(msg);
+			cObjOut.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//Parse Message -- determine the type of Message and act accordingly
+	public void parseMessage(Message message){
+		try {
+			Message incoming = (Message) cObjIn.readObject();
+			
+			switch (incoming.getType()){
+			case Message.MESSAGE: view.receiveMessage(incoming);
+			case Message.UPDATE_USERS: view.updateUsers((String[]) incoming.getData());
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) throws IOException{
 		@SuppressWarnings("unused")
 		ChatClient client = new ChatClient();
@@ -95,5 +120,31 @@ public class ChatClient {
 	
 	public static void setIP(String IP){
 		hostName = IP;
+	}
+	
+	//Update 5/5/2015: Create member class as helper for ChatClient.  This 
+	//class will contain the Thread listening on the Port and will have access 
+	//to all the ChatClient's incoming data.  The Listener will poll a message 
+	//queue.  Many synchronization issues can effectively be solved by
+	//synchronizing this member class's run method and passing all Message objects
+	//through it.
+	public class Listener extends Thread {
+
+		public synchronized void run(){
+			try{
+				
+				msgQueue.add((Message)cObjIn.readObject());
+				System.out.println("Control flow made it to A");
+				
+				while(true){
+					while(msgQueue.peek() == null){
+						wait();	//Need a value here?
+					}
+					parseMessage(msgQueue.poll());
+				}
+			} catch(Exception e){
+				e.printStackTrace();
+			}
+		}
 	}
 }

@@ -9,6 +9,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
@@ -20,6 +21,7 @@ public class CSView {
 	private Border border;
 	private JList userList;
 	private DefaultListModel<String> model;
+	private JScrollPane scrollPane;
 	public JTextArea serverMsgWindow;
 	private CSController controller;
 	
@@ -42,16 +44,17 @@ public class CSView {
 		userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		userList.setBorder(border);
 		
-		//TODO - make window scroll
+		//Server message window with scroll bar
 		serverMsgWindow = new JTextArea(10, 30);
 		serverMsgWindow.setEditable(false);
-		serverMsgWindow.setBorder(border);		
+		scrollPane = new JScrollPane(serverMsgWindow);
+		scrollPane.setBorder(border);
 		
 		contentPane = frame.getContentPane();
 		contentPane.setLayout(new GridLayout(2, 1));
 		
 		contentPane.add(userList);
-		contentPane.add(serverMsgWindow);
+		contentPane.add(scrollPane);
 		
 		frame.setContentPane(contentPane);
 		frame.setVisible(true);

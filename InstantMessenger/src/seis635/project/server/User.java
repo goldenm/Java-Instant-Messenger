@@ -4,6 +4,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+//This has mostly been replaced by the CSHandler and the HashMap
+//This class will most likely be removed if it's not necessary
 public class User {
 
 	String username; //unique identifier
