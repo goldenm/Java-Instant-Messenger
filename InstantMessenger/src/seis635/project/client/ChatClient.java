@@ -110,21 +110,11 @@ public class ChatClient {
 			view.newChat(message);
 			chats.get(message.getSender()).receiveMessage(message.getSender(), (String) message.getData());
 		}
-		
-		/*
-		for(String user : chats.keySet()){
-			if(user.equals(message.getSender())){
-				chats.get(user).receiveMessage(message.getSender(), (String) message.getData());
-			}
-		}
-		//If they're not in the chats HashMap, call the method in view to create a new ChatWindow
-		view.newChat(message);
-		chats.get(message.getSender()).receiveMessage(message.getSender(), (String) message.getData());*/
 	}
 	
 	//Send Message
-	public static void sendMessage(String recipient, String message){
-		Message msg = new Message(recipient, username, message, Message.MESSAGE);
+	public static void sendMessage(String recipient, String message, int type){
+		Message msg = new Message(recipient, username, message, type);
 		try {
 			cObjOut.writeObject(msg);
 			cObjOut.flush();
@@ -146,7 +136,8 @@ public class ChatClient {
 	}
 	
 	public static void shutdown(){
-		//TODO - upon closing, send logout message that closes streams, removes user from 
+		//TODO - upon closing, send logout message that closes streams, removes user from
+		sendMessage(null, "LOGOUT", Message.LOGOUT);
 	}
 	
 	public static void main(String[] args) throws IOException{

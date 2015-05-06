@@ -32,17 +32,17 @@ public class CSHandler extends Thread {
 			try {
 				
 				Message incoming = (Message) objIn.readObject();
-				ChatServer.getListener().addMsg(incoming);
 				
-				/*
 				if(incoming.getType() == Message.MESSAGE){
-					ChatServer.msgQueue.add(incoming);
-					notify();
+					ChatServer.getListener().addMsg(incoming);
 				}
-				*/
+				else if(incoming.getType() == Message.LOGOUT){
+					ChatServer.removeUser(incoming.getSender());
+				}
 				
 			} catch (java.net.SocketException e){
 				System.err.println("User disconnected");
+				
 				try {
 					objIn.close();
 					objOut.close();

@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -32,7 +34,7 @@ public class CCView {
 		frame.setSize(250, 500);
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		//Create Border
 		border = BorderFactory.createLineBorder(Color.gray);
@@ -49,6 +51,12 @@ public class CCView {
 		contentPane.add(userList);
 		
 		frame.setContentPane(contentPane);
+		frame.addWindowListener(new WindowAdapter(){
+			public void windowClosing(WindowEvent e){
+				ChatClient.shutdown();
+				System.exit(0);
+			}
+		});
 		frame.setVisible(true);
 		
 		LoginDialog loginDialog = new LoginDialog(frame);

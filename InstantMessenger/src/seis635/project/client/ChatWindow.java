@@ -18,6 +18,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.Border;
 
+import seis635.project.cmn.Message;
+
 public class ChatWindow {
 
 	private JFrame frame;
@@ -69,7 +71,7 @@ public class ChatWindow {
 		//Set up pane
 		contentPane = frame.getContentPane();
 		contentPane.setLayout(new GridLayout(2, 1));
-		contentPane.add(chatWindow);
+		contentPane.add(chatScroll);
 		contentPane.add(botPanel);
 		
 		frame.setContentPane(contentPane);
@@ -88,7 +90,7 @@ public class ChatWindow {
 		Date time = new Date();
 		chatWindow.append(ChatClient.getUsername() + " [" + sdf.format(time) 
 				+ "]: " + message + "\n");
-		ChatClient.sendMessage(recipient, message);
+		ChatClient.sendMessage(recipient, message, Message.MESSAGE);
 	}
 	
 	public void receiveMessage(String sender, String message){

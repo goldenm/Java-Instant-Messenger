@@ -124,8 +124,11 @@ public class ChatServer {
 		}
 	}
 	
-	public void removeUser(String user){
+	public static void removeUser(String user){
 		users.remove(user);
+		controller.writeMsg("User " + user + " has logged out.");
+		updateAllUsers();
+		view.updateUsers(getUsernames());
 	}
 	
 	public static void main(String[] args){
