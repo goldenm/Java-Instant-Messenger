@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 //Not the prettiest of dialog boxes, but close enough for government work
+@SuppressWarnings("serial")
 public class LoginDialog extends JDialog {
 
 	private JPanel panel;

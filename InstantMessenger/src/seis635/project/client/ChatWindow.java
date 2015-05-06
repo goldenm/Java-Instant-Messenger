@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -28,9 +30,12 @@ public class ChatWindow {
 	@SuppressWarnings("unused")
 	private String recipient;
 	
+	private SimpleDateFormat sdf;
+	
 	public ChatWindow(final String recipient, JFrame viewFrame){
 		
 		this.recipient = recipient;
+		sdf = new SimpleDateFormat("HH:mm:ss");
 		
 		//Create frame, set size, center, and set exit on close
 		frame = new JFrame("Chat with " + recipient);
@@ -75,7 +80,20 @@ public class ChatWindow {
 			public void actionPerformed(ActionEvent e) {
 				String tempMsg = msgWindow.getText();
 				msgWindow.setText("");
-				ChatClient.sendMessage(recipient, tempMsg);
+				sendMessage(recipient, tempMsg);
 			}});
+	}
+	
+	public void sendMessage(String recipient, String message){
+		Date time = new Date();
+		chatWindow.append(ChatClient.getUsername() + " [" + sdf.format(time) 
+				+ "]: " + message + "\n");
+		ChatClient.sendMessage(recipient, message);
+	}
+	
+	public void receiveMessage(String sender, String message){
+		Date time = new Date();
+		chatWindow.append(sender + " [" + sdf.format(time) + "]: " 
+				+ message + "\n");
 	}
 }

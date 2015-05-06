@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -19,6 +20,7 @@ public class ChatClient {
 	private static ObjectOutputStream cObjOut;
 	private static Socket socket;
 	private static String username;
+	public static HashMap<String, ChatWindow> chats;
 	public static Queue<Message> msgQueue;
 	
 	public ChatClient() {
@@ -30,10 +32,10 @@ public class ChatClient {
 		}
 		
 		msgQueue = new LinkedList<Message>();
+		chats = new HashMap<String, ChatWindow>();
 		
 		Listener chatListener = new Listener();
 		chatListener.start();
-		
 	}
 	
 	public static void connect() throws IOException{
@@ -81,6 +83,43 @@ public class ChatClient {
 					hostName + " and Port " + portNumber);
 			e.printStackTrace();
 		}
+	}	
+	
+	//Parse Message -- determine the type of Message and act accordingly
+	public void parseMessage(Message message){
+		try {
+			switch (message.getType()){
+			case Message.MESSAGE: receiveMessage(message);
+				break;
+			case Message.UPDATE_USERS: view.updateUsers((String[]) message.getData());
+				break;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//Receive message and route to correct ChatWindow
+	public void receiveMessage(Message message){
+		
+		if(chats.containsKey(message.getSender())){
+			chats.get(message.getSender()).receiveMessage(message.getSender(), (String) message.getData());
+		}
+		else{
+			view.newChat(message);
+			chats.get(message.getSender()).receiveMessage(message.getSender(), (String) message.getData());
+		}
+		
+		/*
+		for(String user : chats.keySet()){
+			if(user.equals(message.getSender())){
+				chats.get(user).receiveMessage(message.getSender(), (String) message.getData());
+			}
+		}
+		//If they're not in the chats HashMap, call the method in view to create a new ChatWindow
+		view.newChat(message);
+		chats.get(message.getSender()).receiveMessage(message.getSender(), (String) message.getData());*/
 	}
 	
 	//Send Message
@@ -94,32 +133,25 @@ public class ChatClient {
 		}
 	}
 	
-	//Parse Message -- determine the type of Message and act accordingly
-	public void parseMessage(Message message){
-		try {
-			Message incoming = (Message) cObjIn.readObject();
-			
-			switch (incoming.getType()){
-			case Message.MESSAGE: view.receiveMessage(incoming);
-			case Message.UPDATE_USERS: view.updateUsers((String[]) incoming.getData());
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static void main(String[] args) throws IOException{
-		@SuppressWarnings("unused")
-		ChatClient client = new ChatClient();
-	}
-	
 	public static void setUsername(String user){
 		username = user;
 	}
 	
 	public static void setIP(String IP){
 		hostName = IP;
+	}
+	
+	public static String getUsername(){
+		return username;
+	}
+	
+	public static void shutdown(){
+		//TODO - upon closing, send logout message that closes streams, removes user from 
+	}
+	
+	public static void main(String[] args) throws IOException{
+		@SuppressWarnings("unused")
+		ChatClient client = new ChatClient();
 	}
 	
 	//Update 5/5/2015: Create member class as helper for ChatClient.  This 
@@ -133,13 +165,9 @@ public class ChatClient {
 		public synchronized void run(){
 			try{
 				
-				msgQueue.add((Message)cObjIn.readObject());
-				System.out.println("Control flow made it to A");
-				
 				while(true){
-					while(msgQueue.peek() == null){
-						wait();	//Need a value here?
-					}
+					//Probably need a lock here
+					msgQueue.add((Message)cObjIn.readObject());
 					parseMessage(msgQueue.poll());
 				}
 			} catch(Exception e){

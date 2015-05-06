@@ -3,7 +3,6 @@ package seis635.project.server;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridLayout;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -19,10 +18,11 @@ public class CSView {
 	private JFrame frame;
 	private Container contentPane;
 	private Border border;
-	private JList userList;
+	private JList<String> userList;
 	private DefaultListModel<String> model;
 	private JScrollPane scrollPane;
 	public JTextArea serverMsgWindow;
+	@SuppressWarnings("unused")
 	private CSController controller;
 	
 	public CSView(final CSController controller){

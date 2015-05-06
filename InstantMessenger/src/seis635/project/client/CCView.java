@@ -55,12 +55,15 @@ public class CCView {
 		loginDialog.setLocationRelativeTo(frame);
 		loginDialog.setVisible(true);
 		
+		frame.setTitle(ChatClient.getUsername() + "'s Chat Client");
+		
 		userList.addMouseListener(new MouseAdapter(){
 			@Override
 			public void mouseClicked(MouseEvent e){
 		    	if(e.getClickCount()==2){
 		    		String recipient = (String) userList.getSelectedValue();
-		    		new ChatWindow(recipient, frame);
+		    		ChatWindow chatWindow = new ChatWindow(recipient, frame);
+		    		ChatClient.chats.put(recipient, chatWindow);
 		        }
 		    }
 		});
@@ -75,9 +78,8 @@ public class CCView {
 		}
 	}
 
-	public void receiveMessage(Message incoming) {
-		// TODO If no ChatWindow is open for this chat, open a chat window with this message
-		//Debugging to test:
-		System.out.println("Message received: " + incoming.getData());
+	public void newChat(Message message) {
+		ChatWindow chatWindow = new ChatWindow(message.getSender(), frame);
+		ChatClient.chats.put(message.getSender(), chatWindow);
 	}
 }

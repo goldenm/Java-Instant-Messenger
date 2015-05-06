@@ -21,6 +21,7 @@ public class ChatServer {
 	private static Socket clientSocket;
 	public static Map<String, CSHandler> users;
 	public static Queue<Message> msgQueue;
+	private static Listener serverListener;
 	
 	private static CSView view;
 	private static CSController controller;
@@ -36,7 +37,7 @@ public class ChatServer {
 		
 		init();				//Initialize the Chat Server
 		
-		Listener serverListener = new Listener();
+		serverListener = new Listener();
 		serverListener.start();
 		
 		while(true){
@@ -95,20 +96,17 @@ public class ChatServer {
 				controller.writeMsg("User " + loginRequest.getData() + " logged in");
 				
 				//Confirm login to user
-				objOut.writeObject(new Message(null, null, "SUCCESS", Message.SERVER_RESPONSE));
+				objOut.writeObject(new Message(null, "Server", "SUCCESS", Message.SERVER_RESPONSE));
 				objOut.flush();
 				
-				//Send current users to update GUI initially
-				//TODO - send updated users to ALL USERS
-				//objOut.writeObject(new Message(null, null, getUsernames(), Message.UPDATE_USERS));
-				//objOut.flush();
+				//Send current users to all users
 				updateAllUsers();
 				
 				//Update users on Server GUI
 				view.updateUsers(getUsernames());
 			}
 			else{
-				objOut.writeObject(new Message(null, null, "FAIL", Message.SERVER_RESPONSE));
+				objOut.writeObject(new Message(null, "Server", "FAIL", Message.SERVER_RESPONSE));
 				objOut.flush();
 			}
 		} catch (ClassNotFoundException e) {
@@ -122,19 +120,22 @@ public class ChatServer {
 	
 	public static void updateAllUsers(){
 		for(String user : users.keySet()){
-			users.get(user).sendMessage(new Message(null, null, getUsernames(), Message.UPDATE_USERS));
+			users.get(user).sendMessage(new Message(user, "Server", getUsernames(), Message.UPDATE_USERS));
 		}
 	}
 	
 	public void removeUser(String user){
 		users.remove(user);
-		//need method to update all users
 	}
 	
 	public static void main(String[] args){
 		
 		@SuppressWarnings("unused")
 		ChatServer server = new ChatServer();
+	}
+	
+	public static Listener getListener(){
+		return serverListener;
 	}
 	
 	
@@ -149,8 +150,8 @@ public class ChatServer {
 		public synchronized void run(){
 			try{
 				while(true){
-					while(msgQueue.peek() == null){
-						wait();	//Need a value here?
+					while(msgQueue.isEmpty()){
+						wait();
 					}
 					
 					Message currentMsg = msgQueue.poll();
@@ -164,6 +165,11 @@ public class ChatServer {
 			} catch(Exception e){
 				e.printStackTrace();
 			}
+		}
+		
+		public synchronized void addMsg(Message message){
+			msgQueue.add(message);
+			notify();
 		}
 	}
 }

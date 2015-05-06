@@ -2,6 +2,7 @@ package seis635.project.cmn;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class Message implements Serializable {
 
 	//Define type of message

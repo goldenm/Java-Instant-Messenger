@@ -9,9 +9,10 @@ import seis635.project.cmn.Message;
 
 //CSHandler is a representation of the action needed to be performed when a
 //Message type is sent between clients.  Each client will be assigned a Handler
-//to hold the open ObjectStreams in the Hash map.
+//to hold the open ObjectStreams in the HashMap.
 public class CSHandler extends Thread {
 
+	@SuppressWarnings("unused")
 	private Socket socket;
 	private ObjectInputStream objIn;
 	private ObjectOutputStream objOut;
@@ -31,10 +32,14 @@ public class CSHandler extends Thread {
 			try {
 				
 				Message incoming = (Message) objIn.readObject();
+				ChatServer.getListener().addMsg(incoming);
 				
+				/*
 				if(incoming.getType() == Message.MESSAGE){
 					ChatServer.msgQueue.add(incoming);
+					notify();
 				}
+				*/
 				
 			} catch (java.net.SocketException e){
 				System.err.println("User disconnected");
